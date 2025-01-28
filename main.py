@@ -7,14 +7,15 @@ from pygame.locals import *
 # Инициализация параметров
 fps = 25
 window_w, window_h = 600, 500
-block, cup_h, cup_w = 20, 20, 10
+block = 20
+cup_h, cup_w = 20, 10
 
-side_freq, down_freq = 0.15, 0.1  # передвижение в сторону и вниз
-side_margin = int((window_w - cup_w * block) / 2)
-top_margin = window_h - (cup_h * block) - 5
+side_freq, down_freq = 0.15, 0.1  # Передвижение в сторону и вниз
+top_margin = 50  # Отступ сверху
+side_margin = 50  # Отступ по бокам
 
-colors = ((0, 0, 225), (0, 225, 0), (225, 0, 0), (225, 225, 0))  # синий, зеленый, красный, желтый
-lightcolors = ((30, 30, 255), (50, 255, 50), (255, 30, 30), (255, 255, 30))  # светло-синий, светло-зеленый, светло-красный, светло-желтый
+colors = ((0, 0, 225), (0, 225, 0), (225, 0, 0), (225, 225, 0))  # Синий, Зеленый, Красный, Желтый
+lightcolors = ((30, 30, 255), (50, 255, 50), (255, 30, 30), (255, 255, 30))  # Светло-синий, Светло-зеленый, Светло-красный, Светло-желтый
 
 white, gray, black = (255, 255, 255), (185, 185, 185), (0, 0, 0)
 brd_color, bg_color, txt_color, title_color, info_color = white, black, white, colors[3], colors[0]
@@ -61,8 +62,8 @@ figures = {
            'ooooo'],
           ['ooooo',
            'ooxoo',
-           'ooxoo',
            'oxxoo',
+           'ooxoo',
            'ooooo']],
     'L': [['ooooo',
            'oooxo',
@@ -121,28 +122,33 @@ figures = {
            'ooooo']]
 }
 
+# Инициализация уровня сложности
+difficulty_level = 1  # Уровень сложности
+
+
 def txtObjects(text, font, color):
     surf = font.render(text, True, color)
     return surf, surf.get_rect()
+
 
 def main_menu():
     while True:
         display_surf.fill(bg_color)
         titleSurf, titleRect = txtObjects('Тетрис Lite', big_font, title_color)
-        titleRect.center = (window_w // 2, window_h // 2 - 50)
+        titleRect.center = (window_w // 2, top_margin)
         display_surf.blit(titleSurf, titleRect)
 
         # Кнопки меню
         startSurf, startRect = txtObjects('Начать игру', basic_font, txt_color)
-        startRect.center = (window_w // 2, window_h // 2)
+        startRect.center = (window_w // 2, window_h // 2 - 20)
         display_surf.blit(startSurf, startRect)
 
         settingsSurf, settingsRect = txtObjects('Настройки', basic_font, txt_color)
-        settingsRect.center = (window_w // 2, window_h // 2 + 50)
+        settingsRect.center = (window_w // 2, window_h // 2 + 20)
         display_surf.blit(settingsSurf, settingsRect)
 
         exitSurf, exitRect = txtObjects('Выход', basic_font, txt_color)
-        exitRect.center = (window_w // 2, window_h // 2 + 100)
+        exitRect.center = (window_w // 2, window_h // 2 + 60)
         display_surf.blit(exitSurf, exitRect)
 
         pg.display.update()
@@ -162,12 +168,13 @@ def main_menu():
                 elif exitRect.collidepoint(mouse_pos):
                     stopGame()
 
+
 def settings_menu():
     global display_surf, window_w, window_h, difficulty_level  # Объявляем переменные как глобальные
     while True:
         display_surf.fill(bg_color)
         titleSurf, titleRect = txtObjects('Настройки', big_font, title_color)
-        titleRect.center = (window_w // 2, window_h // 2 - 100)
+        titleRect.center = (window_w // 2, top_margin)
         display_surf.blit(titleSurf, titleRect)
 
         # Кнопка увеличения сложности
@@ -186,6 +193,11 @@ def settings_menu():
         difficulty_rect.center = (window_w // 2, window_h // 2 + 70)
         display_surf.blit(difficulty_surf, difficulty_rect)
 
+        # Кнопка "Назад"
+        backSurf, backRect = txtObjects('Назад', basic_font, txt_color)
+        backRect.center = (window_w // 2, window_h // 2 + 120)
+        display_surf.blit(backSurf, backRect)
+
         pg.display.update()
 
         for event in pg.event.get():
@@ -199,27 +211,38 @@ def settings_menu():
             if event.type == pg.MOUSEBUTTONDOWN:
                 mouse_pos = pg.mouse.get_pos()
                 if increase_difficulty_rect.collidepoint(mouse_pos):
-                    difficulty_level += 1  # Увеличиваем уровень сложности
+                    if difficulty_level < 3:  # Ограничиваем уровень сложности до 3
+                        difficulty_level += 1  # Увеличиваем уровень сложности
                 elif change_size_rect.collidepoint(mouse_pos):
                     change_window_size()  # Вызов функции для изменения размера окна
+                elif backRect.collidepoint(mouse_pos):  # Возвращаемся в главное меню
+                    return
+
 
 def change_window_size():
-    global display_surf, window_w, window_h
+    global display_surf, window_w, window_h, cup_w, cup_h, block
     # Изменение размера окна
     if (window_w, window_h) == (600, 500):
         window_w, window_h = 800, 600
     else:
         window_w, window_h = 600, 500
+
+    # Пересчет размеров игрового поля
+    cup_w = (window_w - 2 * side_margin) // block
+    cup_h = (window_h - top_margin - 50) // block  # Учитываем отступ сверху и место для информации
     display_surf = pg.display.set_mode((window_w, window_h))  # Обновляем размер окна
+
 
 def stopGame():
     pg.quit()
     sys.exit()
 
+
 def pauseScreen():
-    pause = pg.Surface((600, 500), pg.SRCALPHA)
+    pause = pg.Surface((window_w, window_h), pg.SRCALPHA)
     pause.fill((0, 0, 255, 127))
     display_surf.blit(pause, (0, 0))
+
 
 def runTetris():
     cup = emptycup()
@@ -235,7 +258,7 @@ def runTetris():
     nextFig = getNewFig()
 
     while True:
-        if fallingFig == None:
+        if fallingFig is None:
             # если нет падающих фигур, генерируем новую
             fallingFig = nextFig
             nextFig = getNewFig()
@@ -324,49 +347,10 @@ def runTetris():
         gamecup(cup)
         drawInfo(points, level)
         drawnextFig(nextFig)
-        if fallingFig != None:
+        if fallingFig is not None:
             drawFig(fallingFig)
         pg.display.update()
         fps_clock.tick(fps)
-    pass
-
-def pauseScreen():
-    pause = pg.Surface((600, 500), pg.SRCALPHA)
-    pause.fill((0, 0, 255, 127))
-    display_surf.blit(pause, (0, 0))
-
-def txtObjects(text, font, color):
-    surf = font.render(text, True, color)
-    return surf, surf.get_rect()
-
-
-def stopGame():
-    pg.quit()
-    sys.exit()
-
-
-def checkKeys():
-    quitGame()
-
-    for event in pg.event.get([KEYDOWN, KEYUP]):
-        if event.type == KEYDOWN:
-            continue
-        return event.key
-    return None
-
-
-def showText(text):
-    titleSurf, titleRect = txtObjects(text, big_font, title_color)
-    titleRect.center = (int(window_w / 2) - 3, int(window_h / 2) - 3)
-    display_surf.blit(titleSurf, titleRect)
-
-    pressKeySurf, pressKeyRect = txtObjects('Нажмите любую клавишу для продолжения', basic_font, title_color)
-    pressKeyRect.center = (int(window_w / 2), int(window_h / 2) + 100)
-    display_surf.blit(pressKeySurf, pressKeyRect)
-
-    while checkKeys() == None:
-        pg.display.update()
-        fps_clock.tick()
 
 
 def quitGame():
@@ -379,8 +363,8 @@ def quitGame():
 
 
 def calcSpeed(points):
-    # вычисляет уровень
-    level = int(points / 10) + 1
+    # вычисляет уровень и скорость падения
+    level = int(points / 10) + 1 + difficulty_level - 1  # Учитываем уровень сложности
     fall_speed = 0.27 - (level * 0.02)
     return level, fall_speed
 
@@ -462,7 +446,7 @@ def drawBlock(block_x, block_y, color, pixelx=None, pixely=None):
     # отрисовка квадратных блоков, из которых состоят фигуры
     if color == empty:
         return
-    if pixelx == None and pixely == None:
+    if pixelx is None and pixely is None:
         pixelx, pixely = convertCoords(block_x, block_y)
     pg.draw.rect(display_surf, colors[color], (pixelx + 1, pixely + 1, block - 1, block - 1), 0, 3)
     pg.draw.rect(display_surf, lightcolors[color], (pixelx + 1, pixely + 1, block - 4, block - 4), 0, 3)
@@ -484,35 +468,35 @@ def gamecup(cup):
 def drawTitle():
     titleSurf = big_font.render('Тетрис Lite', True, title_color)
     titleRect = titleSurf.get_rect()
-    titleRect.topleft = (window_w - 425, 30)
+    titleRect.topleft = (side_margin, 10)
     display_surf.blit(titleSurf, titleRect)
 
 
 def drawInfo(points, level):
     pointsSurf = basic_font.render(f'Баллы: {points}', True, txt_color)
     pointsRect = pointsSurf.get_rect()
-    pointsRect.topleft = (window_w - 550, 180)
+    pointsRect.topleft = (side_margin, window_h - 100)
     display_surf.blit(pointsSurf, pointsRect)
 
     levelSurf = basic_font.render(f'Уровень: {level}', True, txt_color)
     levelRect = levelSurf.get_rect()
-    levelRect.topleft = (window_w - 550, 250)
+    levelRect.topleft = (side_margin, window_h - 70)
     display_surf.blit(levelSurf, levelRect)
 
     pausebSurf = basic_font.render('Пауза: пробел', True, info_color)
     pausebRect = pausebSurf.get_rect()
-    pausebRect.topleft = (window_w - 550, 420)
+    pausebRect.topleft = (side_margin, window_h - 40)
     display_surf.blit(pausebSurf, pausebRect)
 
     escbSurf = basic_font.render('Выход: Esc', True, info_color)
     escbRect = escbSurf.get_rect()
-    escbRect.topleft = (window_w - 550, 450)
+    escbRect.topleft = (side_margin, window_h - 20)
     display_surf.blit(escbSurf, escbRect)
 
 
 def drawFig(fig, pixelx=None, pixely=None):
     figToDraw = figures[fig['shape']][fig['rotation']]
-    if pixelx == None and pixely == None:
+    if pixelx is None and pixely is None:
         pixelx, pixely = convertCoords(fig['x'], fig['y'])
 
     # отрисовка элементов фигур
@@ -525,9 +509,25 @@ def drawFig(fig, pixelx=None, pixely=None):
 def drawnextFig(fig):  # превью следующей фигуры
     nextSurf = basic_font.render('Следующая:', True, txt_color)
     nextRect = nextSurf.get_rect()
-    nextRect.topleft = (window_w - 150, 180)
+    nextRect.topleft = (window_w - 150, top_margin + 20)
     display_surf.blit(nextSurf, nextRect)
-    drawFig(fig, pixelx=window_w - 150, pixely=230)
+    drawFig(fig, pixelx=window_w - 150, pixely=top_margin + 50)
+
+
+def showText(text):
+    titleSurf, titleRect = txtObjects(text, big_font, title_color)
+    titleRect.center = (int(window_w / 2), int(window_h / 2))
+    display_surf.blit(titleSurf, titleRect)
+
+    pressKeySurf, pressKeyRect = txtObjects('Нажмите любую клавишу для продолжения', basic_font, title_color)
+    pressKeyRect.center = (int(window_w / 2), int(window_h / 2) + 50)
+    display_surf.blit(pressKeySurf, pressKeyRect)
+
+    while checkKeys() is None:
+        pg.display.update()
+        fps_clock.tick()
+
+
 def main():
     global fps_clock, display_surf, basic_font, big_font
     pg.init()
@@ -535,12 +535,13 @@ def main():
     display_surf = pg.display.set_mode((window_w, window_h))
     basic_font = pg.font.SysFont('arial', 20)
     big_font = pg.font.SysFont('verdana', 45)
-    pg.display.set_caption('Тетрис Lite')
+    pg.display.set_caption('Тетрис')
     main_menu()  # Переход в главное меню
     while True:  # начинаем игру
         runTetris()
         pauseScreen()
         showText('Игра закончена')
+
 
 if __name__ == '__main__':
     main()
