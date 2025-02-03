@@ -216,8 +216,7 @@ def settings_menu():
                 sys.exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    pg.quit()
-                    sys.exit()
+                    main_menu()
             if event.type == pg.MOUSEBUTTONDOWN:
                 mouse_pos = pg.mouse.get_pos()
                 if increase_difficulty_rect.collidepoint(mouse_pos):
@@ -368,7 +367,7 @@ def quitGame():
         stopGame()
     for event in pg.event.get(KEYUP):
         if event.key == K_ESCAPE:
-            stopGame()
+            main_menu()
         pg.event.post(event)
 
 
