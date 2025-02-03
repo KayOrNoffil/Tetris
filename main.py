@@ -12,8 +12,9 @@ cup_h, cup_w = 20, 10
 
 side_freq, down_freq = 0.15, 0.1  # Передвижение в сторону и вниз
 top_margin = 50  # Отступ сверху
-side_margin = 50  # Отступ по бокам
+side_margin = 200  # Отступ по бокам
 
+# Загрузка цветов
 colors = ((0, 0, 225), (0, 225, 0), (225, 0, 0), (225, 225, 0))  # Синий, Зеленый, Красный, Желтый
 lightcolors = ((30, 30, 255), (50, 255, 50), (255, 30, 30), (255, 255, 30))  # Светло-синий, Светло-зеленый, Светло-красный, Светло-желтый
 
@@ -125,18 +126,27 @@ figures = {
 # Инициализация уровня сложности
 difficulty_level = 1  # Уровень сложности
 
+# Загрузка звука
+pg.mixer.init()
+point_sound = pg.mixer.Sound('data/point.ogg')
+
+# Загрузка логотипа
+logo = pg.image.load('data/logo.png')
 
 def txtObjects(text, font, color):
     surf = font.render(text, True, color)
     return surf, surf.get_rect()
 
+def drawTitle():
+    # Отрисовка логотипа
+    logo_rect = logo.get_rect(center=(window_w // 2, top_margin // 2))
+    display_surf.blit(logo, logo_rect)
 
 def main_menu():
     while True:
         display_surf.fill(bg_color)
-        titleSurf, titleRect = txtObjects('Тетрис Lite', big_font, title_color)
-        titleRect.center = (window_w // 2, top_margin)
-        display_surf.blit(titleSurf, titleRect)
+        logo_rect = logo.get_rect(center=(window_w // 2, window_h - 400))
+        display_surf.blit(logo, logo_rect)
 
         # Кнопки меню
         startSurf, startRect = txtObjects('Начать игру', basic_font, txt_color)
@@ -427,6 +437,7 @@ def clearCompleted(cup):
     y = cup_h - 1
     while y >= 0:
         if isCompleted(cup, y):
+            point_sound.play()  # Воспроизведение звука при удалении ряда
             for pushDownY in range(y, 0, -1):
                 for x in range(cup_w):
                     cup[x][pushDownY] = cup[x][pushDownY - 1]
@@ -466,31 +477,30 @@ def gamecup(cup):
 
 
 def drawTitle():
-    titleSurf = big_font.render('Тетрис Lite', True, title_color)
-    titleRect = titleSurf.get_rect()
-    titleRect.topleft = (side_margin, 10)
-    display_surf.blit(titleSurf, titleRect)
+    # Отрисовка логотипа
+    logo_rect = logo.get_rect(center=(window_w // 2, top_margin // 2))
+    display_surf.blit(logo, logo_rect)
 
 
 def drawInfo(points, level):
     pointsSurf = basic_font.render(f'Баллы: {points}', True, txt_color)
     pointsRect = pointsSurf.get_rect()
-    pointsRect.topleft = (side_margin, window_h - 100)
+    pointsRect.topleft = (window_w - 180, window_h - 120)
     display_surf.blit(pointsSurf, pointsRect)
 
     levelSurf = basic_font.render(f'Уровень: {level}', True, txt_color)
     levelRect = levelSurf.get_rect()
-    levelRect.topleft = (side_margin, window_h - 70)
+    levelRect.topleft = (window_w - 180, window_h - 100)
     display_surf.blit(levelSurf, levelRect)
 
     pausebSurf = basic_font.render('Пауза: пробел', True, info_color)
     pausebRect = pausebSurf.get_rect()
-    pausebRect.topleft = (side_margin, window_h - 40)
+    pausebRect.topleft = (window_w - 180, window_h - 80)
     display_surf.blit(pausebSurf, pausebRect)
 
     escbSurf = basic_font.render('Выход: Esc', True, info_color)
     escbRect = escbSurf.get_rect()
-    escbRect.topleft = (side_margin, window_h - 20)
+    escbRect.topleft = (window_w - 180, window_h - 60)
     display_surf.blit(escbSurf, escbRect)
 
 
@@ -528,6 +538,13 @@ def showText(text):
         fps_clock.tick()
 
 
+def checkKeys():
+    for event in pg.event.get():
+        if event.type == pg.KEYDOWN:
+            return True
+    return None
+
+
 def main():
     global fps_clock, display_surf, basic_font, big_font
     pg.init()
@@ -540,8 +557,10 @@ def main():
     while True:  # начинаем игру
         runTetris()
         pauseScreen()
-        showText('Игра закончена')
+        showText('GAME OVER')
 
 
 if __name__ == '__main__':
     main()
+
+
