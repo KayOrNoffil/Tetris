@@ -63,8 +63,8 @@ figures = {
            'ooooo'],
           ['ooooo',
            'ooxoo',
-           'oxxoo',
            'ooxoo',
+           'oxxoo',
            'ooooo']],
     'L': [['ooooo',
            'oooxo',
@@ -143,6 +143,7 @@ def drawTitle():
     display_surf.blit(logo, logo_rect)
 
 def main_menu():
+    global display_surf
     while True:
         display_surf.fill(bg_color)
         logo_rect = logo.get_rect(center=(window_w // 2, window_h - 400))
@@ -157,6 +158,10 @@ def main_menu():
         settingsRect.center = (window_w // 2, window_h // 2 + 20)
         display_surf.blit(settingsSurf, settingsRect)
 
+        feedbackSurf, feedbackRect = txtObjects('Обратная связь', basic_font, txt_color)
+        feedbackRect.center = (window_w // 2, window_h // 2 + 100)
+        display_surf.blit(feedbackSurf, feedbackRect)
+
         exitSurf, exitRect = txtObjects('Выход', basic_font, txt_color)
         exitRect.center = (window_w // 2, window_h // 2 + 60)
         display_surf.blit(exitSurf, exitRect)
@@ -170,13 +175,16 @@ def main_menu():
                 if event.key == K_ESCAPE:
                     stopGame()
             if event.type == MOUSEBUTTONDOWN:
-                mouse_pos = pg.mouse.get_pos()
+                mouse_pos = pg.mouse.get_pos()  # Получаем позицию мыши при нажатии
                 if startRect.collidepoint(mouse_pos):
                     return  # Начать игру
                 elif settingsRect.collidepoint(mouse_pos):
                     settings_menu()
+                elif feedbackRect.collidepoint(mouse_pos):
+                    feedback_menu()  # Переход в меню обратной связи
                 elif exitRect.collidepoint(mouse_pos):
                     stopGame()
+
 
 
 def settings_menu():
@@ -192,20 +200,25 @@ def settings_menu():
         increase_difficulty_rect.center = (window_w // 2, window_h // 2 - 20)
         display_surf.blit(increase_difficulty_surf, increase_difficulty_rect)
 
+        # Кнопка уменьшения сложности
+        decrease_difficulty_surf, decrease_difficulty_rect = txtObjects('Уменьшить сложность', basic_font, txt_color)
+        decrease_difficulty_rect.center = (window_w // 2, window_h // 2 + 40)
+        display_surf.blit(decrease_difficulty_surf, decrease_difficulty_rect)
+
         # Кнопка изменения размера экрана
         change_size_surf, change_size_rect = txtObjects('Изменить размер экрана', basic_font, txt_color)
-        change_size_rect.center = (window_w // 2, window_h // 2 + 20)
+        change_size_rect.center = (window_w // 2, window_h // 2 + 80)
         display_surf.blit(change_size_surf, change_size_rect)
 
         # Отображение текущего уровня сложности
         difficulty_text = f'Текущая сложность: {difficulty_level}'
         difficulty_surf, difficulty_rect = txtObjects(difficulty_text, basic_font, txt_color)
-        difficulty_rect.center = (window_w // 2, window_h // 2 + 70)
+        difficulty_rect.center = (window_w // 2, window_h // 2 + 120)
         display_surf.blit(difficulty_surf, difficulty_rect)
 
         # Кнопка "Назад"
         backSurf, backRect = txtObjects('Назад', basic_font, txt_color)
-        backRect.center = (window_w // 2, window_h // 2 + 120)
+        backRect.center = (window_w // 2, window_h - 100)
         display_surf.blit(backSurf, backRect)
 
         pg.display.update()
@@ -222,6 +235,9 @@ def settings_menu():
                 if increase_difficulty_rect.collidepoint(mouse_pos):
                     if difficulty_level < 3:  # Ограничиваем уровень сложности до 3
                         difficulty_level += 1  # Увеличиваем уровень сложности
+                elif decrease_difficulty_rect.collidepoint(mouse_pos):
+                    if difficulty_level > 1:  # Ограничиваем уровень сложности до 1
+                        difficulty_level -= 1  # Уменьшаем уровень сложности
                 elif change_size_rect.collidepoint(mouse_pos):
                     change_window_size()  # Вызов функции для изменения размера окна
                 elif backRect.collidepoint(mouse_pos):  # Возвращаемся в главное меню
@@ -557,6 +573,56 @@ def main():
         runTetris()
         pauseScreen()
         showText('GAME OVER')
+
+
+def feedback_menu():
+    while True:
+        display_surf.fill(bg_color)
+        titleSurf, titleRect = txtObjects('Обратная связь', big_font, title_color)
+        titleRect.center = (window_w // 2, top_margin)
+        display_surf.blit(titleSurf, titleRect)
+
+        # Отображение логотипов и ссылок
+        vk_logo = pg.image.load('data/vk.png')  # Замените на путь к вашему изображению
+        tg_logo = pg.image.load('data/tg.png')  # Замените на путь к вашему изображению
+        github_logo = pg.image.load('data/github.png')  # Замените на путь к вашему изображению
+
+        # Позиции для логотипов
+        vk_rect = vk_logo.get_rect(center=(window_w // 2, top_margin + 100))
+        tg_rect = tg_logo.get_rect(center=(window_w // 2, top_margin + 160))
+        github_rect = github_logo.get_rect(center=(window_w // 2, top_margin + 220))
+
+        display_surf.blit(vk_logo, vk_rect)
+        display_surf.blit(tg_logo, tg_rect)
+        display_surf.blit(github_logo, github_rect)
+
+        # Добавьте текстовые ссылки под логотипами
+        vk_text = txtObjects('vk.com/matveytokarev', basic_font, txt_color)
+        tg_text = txtObjects('t.me/yaemogirl228', basic_font, txt_color)
+        github_text = txtObjects('github.com/KayOrNoffil', basic_font, txt_color)
+
+        display_surf.blit(vk_text[0], (vk_rect.centerx - vk_text[0].get_width() // 2, vk_rect.bottom + 5))
+        display_surf.blit(tg_text[0], (tg_rect.centerx - tg_text[0].get_width() // 2, tg_rect.bottom + 5))
+        display_surf.blit(github_text[0], (github_rect.centerx - github_text[0].get_width() // 2, github_rect.bottom + 5))
+
+        # Кнопка "Назад"
+        backSurf, backRect = txtObjects('Назад', basic_font, txt_color)
+        backRect.center = (window_w // 2, window_h - 100)
+        display_surf.blit(backSurf, backRect)
+
+        pg.display.update()
+
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                stopGame()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    return  # Возвращаемся в главное меню
+            if event.type == pg.MOUSEBUTTONDOWN:
+                mouse_pos = pg.mouse.get_pos()
+                if backRect.collidepoint(mouse_pos):
+                    return  # Возвращаемся в главное меню
+
 
 
 if __name__ == '__main__':
