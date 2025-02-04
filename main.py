@@ -390,7 +390,7 @@ def quitGame():
 def calcSpeed(points):
     # вычисляет уровень и скорость падения
     level = int(points / 10) + 1 + difficulty_level - 1  # Учитываем уровень сложности
-    fall_speed = 0.27 - (level * 0.02)
+    fall_speed = 0.27 + (level * 0.02)
     return level, fall_speed
 
 
